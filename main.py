@@ -10,6 +10,9 @@ app = Flask(__name__)
 def main():
     enforcer = Enforcer()
     lastEpisodeList = enforcer.last_episode_list()
+    lastList = []
+    for anime in lastEpisodeList:
+        lastList.append(anime._get_last_episode())
     return render_template('./src/pages/index.html', lastEpisodeList=lastEpisodeList)
 
 @app.route("/animelist")

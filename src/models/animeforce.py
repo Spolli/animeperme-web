@@ -5,6 +5,8 @@ import requests
 from bs4 import BeautifulSoup
 base_link = "http://www.animeforce.org/"
 
+anime_type = ['Episodio', 'Episodi', 'Special', 'Movie', 'OAV', 'OVA']
+
 
 class Enforcer:
     def __init__(self):
@@ -31,6 +33,14 @@ class Enforcer:
                 result.append(Anime(name, href))
         return result
 
+    def getAnimeType(self, arr):
+        for type in anime_type:
+            try:
+                return arr.index(type), type
+            except:
+                pass
+        return -1
+
     def last_episode_list(self, force_update=True):
         r = requests.get(base_link)
         soup = BeautifulSoup(r.content, "lxml")
@@ -38,24 +48,29 @@ class Enforcer:
         result = []
         for a in div:
             anchor = a.find('a', attrs={"href": True})
+            img = a.find('img', attrs={"src": True})
             href = anchor['href']
             span = a.find('span').getText()
-            name = re.sub(r" e?p?i?s?o?d?i.+", "", span, 0, re.IGNORECASE)
             span = span.split(' ')
-            index = span.index('Episodio')
-            episode = int(span[index +1])
-            hrefEpisodeList = f'{href[:href.find("episodio")]}sub-ita-download-streaming/'
-            result.append(Anime(name=name, link=hrefEpisodeList, episode=episode))
+            index, type = self.getAnimeType(span)
+            name = ' '.join(span[:index])
+            episodes = span[index+1:index+2][0].split('-')
+            hrefEpisodeList = f'{href[:href.find(type.lower())]}sub-ita-download-streaming/'
+            if type == 'Episodi':
+                type = 'Episodio'
+            for ep in episodes:
+                result.append(Anime(name=name, link=hrefEpisodeList, episode=int(ep), type=type, img=img))
         return result
 
 class Anime:
-    def __init__(self, name, link, episode=None):
+    def __init__(self, name, link, episode=None, type=None, img=None):
         self.name = name
         self.link = link
         self._info = None
         self._episode_list = []
-        self._image_link = None
-        self.episode = episode
+        self._image_link = img
+        self.episodeNumber = episode
+        self.type = type
 
     def info(self, force_update=False):
         if not self._info or force_update:
@@ -101,19 +116,19 @@ class Anime:
     def _get_last_episode(self):
         r = requests.get(self.link)
         soup = BeautifulSoup(r.content, "lxml")
-        #img = soup.find("div", attrs={"class": "the-content"}).find("img")["src"]
-        #self._image_link = link_fix(img)
         tables = soup.find_all("table")
         if tables and len(tables) > 1:
-            for index, tr in enumerate(tables[1].find_all("tr")):
-                if not tr.find("th") and index+1 == self.episode:
+            for tr in tables[1].find_all("tr"):
+                if not tr.find("th"):
                     tds = tr.find_all("td")
-                    link = tds[1].find("a", attrs={"href": True})["href"]
-                    link = link_fix(link)
-                    return Episode(self.name, link, self.episode)
+                    label = tds[0].getText().replace(u'\xa0', u' ').split(' ')
+                    if label[0] == self.type and int(label[1]) == self.episodeNumber:
+                        link = tds[1].find("a", attrs={"href": True})["href"]
+                        link = link_fix(link)
+                        return Episode(self.name, link, self.episodeNumber)
 
     def __repr__(self):
-        return "<Anime object name='{}' episode='{}'>".format(self.name, self.episode)
+        return "<Anime object name='{}' episode='{}'>".format(self.name, self.episodeNumber)
 
 
 class Episode:
