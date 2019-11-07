@@ -186,3 +186,30 @@ def link_fix(link):
     if externalre:
         return "https://" + externalre.group()
     return "https://www.animeforce.org/ds16.php?d=404"
+
+def download_link(link):
+    r = requests.get(link)
+    if re.search(r"d=404", r.url):
+        return 404
+    if not re.search(r"animeforce", r.url):
+        return r.url
+    soup = BeautifulSoup(r.content, "lxml")
+    link = soup.find("source", attrs={"src": True})
+    if link:
+        return link["src"]
+    alternate_link = soup.find("a", text="Streaming Alternativo")
+    if not alternate_link:
+        return -1
+    alternate_link = link_fix(alternate_link["href"])
+    alternate_r = requests.get(alternate_link)
+    soup = BeautifulSoup(alternate_r.content, "lxml")
+    scripts = soup.find_all("script", attrs={"type": "text/javascript"})
+    link = None
+    for script in scripts:
+        rex = re.search(r"file: \"([^\"]+)\"", script.text)
+        if rex:
+            link = rex.group(1)
+    if link:
+        return link
+    else:
+        return -1
