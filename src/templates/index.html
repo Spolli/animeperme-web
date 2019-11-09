@@ -32,7 +32,7 @@
                 <div class="card-body">
                     <h5 class="card-title">{{ anime.name }}</h5>
                     <p class="card-text">{{anime.type ~ " N. " ~ anime.episodeNumber}}</p>
-                    <button type="button" class="btn btn-link" onclick="goToVideo({{ anime.serialize() }})">Streaming</button>
+                    <button type="button" class="btn btn-link" onclick="goToVideo({{ anime.serialize() }})"><a href="/video/">Stream</a></button>
                 </div>
             </div>
             {% endfor %}
@@ -43,14 +43,12 @@
 
     <script type="text/javascript">
         function goToVideo(anime) {
-            //console.log(anime);
             $.ajax({
                 type: "POST",
                 contentType: "application/json",
                 url: "/",
                 data: JSON.stringify(anime),
                 success: function (data) {
-                    //console.log(data);
                 },
                 dataType: "json"
             });
