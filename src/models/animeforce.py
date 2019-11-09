@@ -4,6 +4,7 @@ import re
 import requests
 from bs4 import BeautifulSoup
 base_link = "http://www.animeforce.org/"
+import json
 
 anime_type = ['Episodio', 'Episodi', 'Special', 'Movie', 'OAV', 'OVA']
 
@@ -44,11 +45,12 @@ class Enforcer:
     def last_episode_list(self, force_update=True):
         r = requests.get(base_link)
         soup = BeautifulSoup(r.content, "lxml")
+        #img = soup.find("div", attrs={"class": "the-content"}).find("img")["src"]
         div = soup.find_all('div', {'class': 'card mb-4 shadow-sm'})
         result = []
         for a in div:
             anchor = a.find('a', attrs={"href": True})
-            img = a.find('img', attrs={"src": True})
+            img = anchor.find('img', attrs={"src": True})["src"]
             href = anchor['href']
             span = a.find('span').getText()
             span = span.split(' ')
@@ -63,29 +65,14 @@ class Enforcer:
         return result
 
 class Anime:
-    def __init__(self, name, link, episode=None, type=None, img=None):
+    def __init__(self, name, link, episode, type, img):
         self.name = name
         self.link = link
         self._info = None
         self._episode_list = []
-        self._image_link = img
+        self.img = img
         self.episodeNumber = episode
         self.type = type
-
-    def info(self, force_update=False):
-        if not self._info or force_update:
-            self._update_info()
-        return self._info
-
-    def image_link(self, force_update=False):
-        if not self._image_link or force_update:
-            self._update_info()
-        return self._image_link
-
-    def episode_list(self, force_update=False):
-        if not self._episode_list or force_update:
-            self._update_info()
-        return self._episode_list
 
     def _update_info(self):
         r = requests.get(self.link)
@@ -127,8 +114,17 @@ class Anime:
                         link = link_fix(link)
                         return Episode(self.name, link, self.episodeNumber)
 
+    def serialize(self):
+        return {
+            "name": self.name,
+            "link": self.link,
+            "episodeNumber": self.episodeNumber,
+            "type": self.type,
+            "img": self.img
+        }
+
     def __repr__(self):
-        return "<Anime object name='{}' episode='{}'>".format(self.name, self.episodeNumber)
+        return "gayyyyyyyy"
 
 
 class Episode:

@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet"
-          href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-          crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
     <title>AnimePerMe</title>
 </head>
+
 <body>
     {% if loading %}
     <div id="loading"></div>
@@ -17,25 +18,46 @@
             <div class="header">
                 <nav>
                     <ul class="nav nav-pills pull-right">
-                        <li role="presentation" ><a href="./src/pages/index.html">Last Episode</a></li>
+                        <li role="presentation"><a href="./src/pages/index.html">Last Episode</a></li>
                         <li role="presentation"><a href="src/pages/animelist.html">Full Anime List</a></li>
                     </ul>
                 </nav>
-                <h3 class="text-muted">Python Flask App</h3>
+                <h3 class="text-muted">Welcome To: Anime Per Me</h3>
             </div>
         </div>
         <div class="container">
-            {% for ep in lastEpisodeList %}
-                <div class="card" style="width: 18rem;">
-                  <div class="card-body">
-                    <h5 class="card-title">{{ ep.name }}</h5>
-                    <p class="card-text">{{ep.name ~ ": Episodio N. " ~ ep.number}}</p>
-                    <a href="/video/{{ep.download_link()}}">Go To Video</a>
-                  </div>
+            {% for anime in lastEpisodeList %}
+            <div class="card" style="width: 18rem;">
+                <img class="card-img-top" src="{{ anime.img }}" alt="{{anime.name}}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ anime.name }}</h5>
+                    <p class="card-text">{{anime.type ~ " N. " ~ anime.episodeNumber}}</p>
+                    <button type="button" class="btn btn-link" onclick="goToVideo({{ anime.serialize() }})">Streaming</button>
                 </div>
+            </div>
             {% endfor %}
         </div>
     </div>
     {% endif %}
+
+
+    <script type="text/javascript">
+        function goToVideo(anime) {
+            //console.log(anime);
+            $.ajax({
+                type: "POST",
+                contentType: "application/json",
+                url: "/",
+                data: JSON.stringify(anime),
+                success: function (data) {
+                    //console.log(data);
+                },
+                dataType: "json"
+            });
+        } 
+    </script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 </body>
+
 </html>
