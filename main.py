@@ -5,25 +5,20 @@ from flask import Flask, render_template, request, url_for, redirect
 from src.models.animeforce import Enforcer, download_link, Anime
 
 app = Flask(__name__, template_folder='./src/templates')
-video_link = None
 
-@app.route('/', methods = ['GET', 'POST'])
+@app.route('/')
 def index():
-    loading = True
+    enforcer = Enforcer()
+    lastEpisodeList = enforcer.last_episode_list()
+    return render_template('index.html', lastEpisodeList=lastEpisodeList)
+
+@app.route("/video", methods=['GET', 'POST'])
+def video_page():
     if request.method == 'POST':
-        global video_link
         date = request.get_json()
         anime = Anime(date['name'], date['link'], date['episodeNumber'], date['type'], date['img'])
-        video_link = anime._get_last_episode().download_link()
-    else:
-        enforcer = Enforcer()
-        lastEpisodeList = enforcer.last_episode_list()
-        loading = False
-    return render_template('index.html', lastEpisodeList=lastEpisodeList, loading=loading)
-
-@app.route("/video/")
-def video_page():
-    return render_template('video.html', video_link=video_link)
+        opened_episode = anime._get_last_episode()
+        return render_template('video.html', episode=opened_episode, video_link=opened_episode.download_link())
 
 @app.route("/animelist")
 def fullAnimeList():

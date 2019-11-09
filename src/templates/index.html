@@ -2,17 +2,17 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <title>AnimePerMe</title>
 </head>
 
 <body>
-    {% if loading %}
     <div id="loading"></div>
-    {% else %}
     <div id="content">
         <div class="container">
             <div class="header">
@@ -22,7 +22,7 @@
                         <li role="presentation"><a href="src/pages/animelist.html">Full Anime List</a></li>
                     </ul>
                 </nav>
-                <h3 class="text-muted">Welcome To: Anime Per Me</h3>
+                <h3 class="text-muted">Anime Per Me</h3>
             </div>
         </div>
         <div class="container">
@@ -32,30 +32,29 @@
                 <div class="card-body">
                     <h5 class="card-title">{{ anime.name }}</h5>
                     <p class="card-text">{{anime.type ~ " N. " ~ anime.episodeNumber}}</p>
-                    <button type="button" class="btn btn-link" onclick="goToVideo({{ anime.serialize() }})"><a href="/video/">Stream</a></button>
+                    <button type="button" class="btn btn-link"
+                        onclick="goToVideo({{ anime.serialize() }})">Stream</button>
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
-    {% endif %}
-
 
     <script type="text/javascript">
         function goToVideo(anime) {
+            //<a href="/video" target="_blank">Stream</a>
             $.ajax({
                 type: "POST",
                 contentType: "application/json",
-                url: "/",
+                url: "/video",
                 data: JSON.stringify(anime),
-                success: function (data) {
+                success: () => {
+                    //window.open('/video', '_blank');
                 },
                 dataType: "json"
             });
-        } 
+        }
     </script>
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
-        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 </body>
 
 </html>
